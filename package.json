@@ -1,16 +1,24 @@
 {
   "name": "koa-browse-sevenzip",
   "version": "1.0.0",
-  "description": "",
+  "description": "Koa middleware to list or extract archive files based on koa-browse",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coverslide/koa-browse-sevenzip"
+  },
+  "author": "Richard Hoffman <coverslide@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "sevenzip": "^1.0.2",
     "string-natural-compare": "^2.0.2"
+  },
+  "peerDependencies": {
+    "koa": "^2.1.0",
+    "koa-browse": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^3.17.1",
