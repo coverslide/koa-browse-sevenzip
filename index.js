@@ -98,6 +98,8 @@ exports.extractFile = function extractFile(options = {}) {
       const filename = await SevenZip.extractFile(ctx.browse.path, ctx.query.extract);
       ctx.response.type = extname(filename);
       ctx.browse.result = fs.createReadStream(filename);
+      ctx.browse.filename = filename.split('/')[filename.split('/').length - 1];
+      ctx.response.set('Content-Disposition', ctx.browse.filename ? `inline; filename=${ctx.browse.filename}` : 'inline');
     } catch (e) {
       ctx.browse.error = 'Could not extract file';
     }
