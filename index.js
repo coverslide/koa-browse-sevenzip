@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('mz/fs');
 const SevenZip = require('sevenzip');
 const naturalCompare = require('string-natural-compare');
 
@@ -96,10 +96,25 @@ exports.extractFile = function extractFile(options = {}) {
     }
     try {
       const filename = await SevenZip.extractFile(ctx.browse.path, ctx.query.extract);
+      const filestat = await fs.stat(filename);
+      const filesize = filestat.size;
       ctx.response.type = extname(filename);
-      ctx.browse.result = fs.createReadStream(filename);
       ctx.browse.filename = filename.split('/')[filename.split('/').length - 1];
       ctx.response.set('Content-Disposition', ctx.browse.filename ? `inline; filename=${ctx.browse.filename}` : 'inline');
+      const range = ctx.request.get('range');
+      const rangeMatch = String(range).match(/([^=]*)=(\d+)-(\d*)$/);
+      if (rangeMatch) {
+        const [,, start, end] = rangeMatch;
+        const trueEnd = Math.min(filesize - 1, Number(end || filesize));
+        const trueStart = Math.min(trueEnd, Number(start));
+        ctx.response.status = 206;
+        ctx.response.set('Content-Length', 1 + (trueEnd - trueStart));
+        ctx.response.set('Content-Range', `bytes ${trueStart}-${trueEnd}/${filesize}`);
+        ctx.browse.result = fs.createReadStream(filename, { start: trueStart, end: trueEnd });
+      } else {
+        ctx.response.set('Content-Length', filesize);
+        ctx.browse.result = fs.createReadStream(filename);
+      }
     } catch (e) {
       ctx.browse.error = 'Could not extract file';
     }
